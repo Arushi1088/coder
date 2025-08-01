@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Agent-Driven Button Fixer</title>
+  <style>
+    .blue-button {
+      background-color: #007BFF;
+      color: #FFF;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      padding-top: 40px;
+    }
+    input, button {
+      font-size: 14px;
+    }
+    #agent-output {
+      width: 80%;
+      max-width: 600px;
+      height: 150px;
+      margin-top: 20px;
+      padding: 10px;
+      background: #f4f4f4;
+      overflow: auto;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <button class="blue-button" id="action-btn">Click Me</button>
+
+  <div style="margin-top: 30px; display: flex; gap: 8px;">
+    <input
+      type="text"
+      id="agent-input"
+      placeholder="Try: 'make button orange', 'make button purple', 'change text to Hello AI'"
+      style="padding: 8px; width: 350px;"
+    />
+    <button id="send-cmd" class="blue-button">Send to Agent</button>
+  </div>
+
+  <pre id="agent-output"></pre>
+
+  <script>
+    document.getElementById('send-cmd').addEventListener('click', async () => {
+      const cmd = document.getElementById('agent-input').value;
+      if (!cmd) return alert('Please enter a command');
+      document.getElementById('agent-output').textContent = '…working…';
+
+      try {
+        const res = await fetch('http://localhost:5001/simple-change', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({command: cmd})
+        });
+        const json = await res.json();
+        document.getElementById('agent-output').textContent =
+          json.result || json.error || 'No response';
+        if (json.result && json.result.includes('Successfully applied')) {
+          setTimeout(() => location.reload(), 800);
+        }
+      } catch (e) {
+        document.getElementById('agent-output').textContent = 'Error: ' + e;
+      }
+    });
+  </script>
+</body>
+</html>
